@@ -1,0 +1,31 @@
+name: Validate Pulsar Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Pulsar release version (e.g. 3.1.0)'
+        required: true
+        type: string
+      candidate_number:
+        description: 'RC candidate number (e.g. 1)'
+        required: true
+        type: string
+  repository_dispatch:
+    types: [validate-pulsar-release]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone pulsar-release-validation
+        run: |
+          git clone https://github.com/lhotari/pulsar-release-validation.git
+
+      - name: Validate Pulsar Release
+        working-directory: pulsar-release-validation
+        run: |
+          ./scripts/validate_pulsar_release_in_docker.sh "${{ inputs.release_version || github.event.client_payload.release_version }}" "${{ inputs.candidate_number || github.event.client_payload.candidate_number }}"
